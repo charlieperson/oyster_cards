@@ -1,8 +1,9 @@
 require 'oystercard'
 
 describe Oystercard do
-  subject(:card) { described_class.new }
-  let(:entry_station)  { double(:entry_station)    }
+  subject(:card)      { described_class.new    }
+  let(:entry_station) { double(:entry_station) }
+  let(:exit_station)  { double(:exit_station)  }
 
   describe '#balance' do
     it 'has a balance of 0' do
@@ -52,16 +53,30 @@ describe Oystercard do
       it 'checks if card.in_journey? returns false upon touch_out' do
         card.top_up(described_class::MAX_LIMIT)
         card.touch_in(entry_station)
-        expect{ card.touch_out }.to change{ card.in_journey? }.to eq false
+        expect{ card.touch_out(exit_station) }.to change{ card.in_journey? }.to eq false
       end
       it 'subtracts FARE from balance' do
-        expect{ card.touch_out }.to change{ card.balance }.by -described_class::FARE
+        expect{ card.touch_out(exit_station) }.to change{ card.balance }.by -described_class::FARE
       end
       it 'entry_station attribute reverts to nil upon touch_out' do
         card.top_up(described_class::MAX_LIMIT)
         card.touch_in(entry_station)
-        expect{ card.touch_out }.to change{ card.entry_station }.to eq nil
+        expect{ card.touch_out(exit_station) }.to change{ card.entry_station }.to eq nil
       end
+      it 'stores exit_station attribute upon touch_out' do
+        card.top_up(described_class::MAX_LIMIT)
+        card.touch_in(entry_station)
+        card.touch_out(exit_station)
+        expect(card.exit_station).to eq exit_station
+      end
+    end
 
+    describe '#trip' do
+      it 'stores entry_station and exit_station as trip attribute' do
+        card.top_up(described_class::MAX_LIMIT)
+        card.touch_in(entry_station)
+        card.touch_out(exit_station)
+        expect(card.trip).to eq [entry_station, exit_station]
+      end
     end
 end

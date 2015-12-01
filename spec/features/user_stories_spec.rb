@@ -1,8 +1,9 @@
 require 'station.rb'
 
 describe "User Stories" do
-  let(:card)    { Oystercard.new }
+  let(:card)          { Oystercard.new }
   let(:entry_station) { Station.new    }
+  let(:exit_station)  { Station.new    }
 
   # In order to use public transport
   # As a customer
@@ -47,7 +48,7 @@ describe "User Stories" do
   it 'allows users to touch out' do
     card.top_up(Oystercard::MAX_LIMIT)
     card.touch_in(entry_station)
-    expect{ card.touch_out }.to change { card.in_journey? }.to eq false
+    expect{ card.touch_out(exit_station) }.to change { card.in_journey? }.to eq false
   end
 
   # In order to pay for my journey
@@ -61,7 +62,7 @@ describe "User Stories" do
   # As a customer
   # When my journey is complete, I need the correct amount deducted from my card
   it 'charges customers appropriate fare when they touch out' do
-    expect{ card.touch_out }.to change{ card.balance }.by -Oystercard::FARE
+    expect{ card.touch_out(exit_station) }.to change{ card.balance }.by -Oystercard::FARE
   end
 
   # In order to pay for my journey
@@ -73,10 +74,26 @@ describe "User Stories" do
     expect(card.entry_station).to eq entry_station
   end
 
-  it 'card needs to reset entry_station to nil on touch out' do
+  it 'card needs to reset entry_station to nil on touch_out' do
     card.top_up(Oystercard::MAX_LIMIT)
     card.touch_in(entry_station)
-    expect{ card.touch_out }.to change{ card.entry_station }.to eq nil
+    expect{ card.touch_out(exit_station) }.to change{ card.entry_station }.to eq nil
+  end
+
+  # In order to know where I have been
+  # As a customer
+  # I want to see to all my previous trips
+  it 'card stores exit station upon touch_out' do
+    card.top_up(Oystercard::MAX_LIMIT)
+    card.touch_in(entry_station)
+    card.touch_out(exit_station)
+    expect(card.exit_station).to eq exit_station
+  end
+  it 'card stores all previous trips' do
+    card.top_up(Oystercard::MAX_LIMIT)
+    card.touch_in(entry_station)
+    card.touch_out(exit_station)
+    expect(card.trip).to eq [entry_station, exit_station]
   end
 
 end
