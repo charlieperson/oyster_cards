@@ -40,9 +40,9 @@ describe Oystercard do
       it 'subtracts FARE from balance' do
         expect{ card.touch_out(exit_station) }.to change{ card.balance }.by fare
       end
-      it 'entry_station attribute reverts to nil upon touch_out' do
+      it 'current_trip resets upon touch_out' do
         card.touch_in(entry_station)
-        expect{ card.touch_out(exit_station) }.to change{ card.entry_station }.to eq nil
+        expect{ card.touch_out(exit_station) }.to change{ card.current_trip }.to eq []
       end
     end
 
@@ -52,19 +52,19 @@ describe Oystercard do
       end
       it 'should record entry_station on touch_in' do
         card.touch_in(entry_station)
-        expect(card.entry_station).to eq entry_station
+        expect(card.current_trip).to eq [entry_station]
       end
     end
 
-    describe '#trip' do
+    describe '#current_trip' do
       before do
         card.touch_in(entry_station)
         card.touch_out(exit_station)
       end
-      it 'trip is cleared upon touch_out' do
-        expect(card.trip).to eq []
+      it 'current_trip is cleared upon touch_out' do
+        expect(card.current_trip).to eq []
       end
-      it 'logs one trip after touch_in and touch_out' do
+      it 'logs current_trip after touch_in and touch_out' do
         expect(card.trips.length).to eq 1
       end
     end

@@ -2,12 +2,11 @@ class Oystercard
   MAX_LIMIT = 90
   FARE = 1
 
-  attr_reader :balance, :entry_station, :trip, :trips
+  attr_reader :balance, :current_trip, :trips
 
   def initialize
     @balance = 0
-    @entry_station = nil
-    @trip = []
+    @current_trip = []
     @trips = {}
   end
 
@@ -18,20 +17,18 @@ class Oystercard
 
   def touch_in(entry_station)
     raise "Sorry mate- you need a top up!" if out_of_cash?
-    @entry_station = entry_station
-    trip << entry_station
+    current_trip << entry_station
   end
 
   def touch_out(exit_station)
-    @entry_station = nil
-    trip << exit_station
+    current_trip << exit_station
     save_trip
     reset_trip
     charge_card
   end
 
   def in_journey?
-    !!@entry_station
+    !current_trip.empty?
   end
 
   private
@@ -41,7 +38,7 @@ class Oystercard
   end
 
   def reset_trip
-    @trip = []
+    @current_trip = []
   end
 
   def maxed_out(amount)
@@ -49,7 +46,7 @@ class Oystercard
   end
 
   def save_trip
-    @trips[@trips.length + 1] = @trip
+    @trips[@trips.length + 1] = @current_trip
   end
 
   def out_of_cash?

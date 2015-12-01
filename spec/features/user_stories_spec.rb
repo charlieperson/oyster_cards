@@ -69,14 +69,14 @@ describe "User Stories" do
     # In order to pay for my journey
     # As a customer
     # I need to know where I've travelled from
-    it 'card needs to record entry_station on touch_in' do
+    it 'card needs to log entry station to current_trip upon touch_in' do
       card.touch_in(entry_station)
-      expect(card.entry_station).to eq entry_station
+      expect(card.current_trip).to eq [entry_station]
     end
 
-    it 'card needs to reset entry_station to nil on touch_out' do
+    it 'card needs to reset current_trip on touch_out' do
       card.touch_in(entry_station)
-      expect{ card.touch_out(exit_station) }.to change{ card.entry_station }.to eq nil
+      expect{ card.touch_out(exit_station) }.to change{ card.in_journey? }.to eq false
     end
 
     # In order to know where I have been
