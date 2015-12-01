@@ -2,7 +2,7 @@ require 'oystercard'
 
 describe Oystercard do
   subject(:card) { described_class.new }
-  let(:station)  { double(:station)    }
+  let(:entry_station)  { double(:entry_station)    }
 
   describe '#balance' do
     it 'has a balance of 0' do
@@ -34,29 +34,34 @@ describe Oystercard do
     describe '#touch_in' do
       it 'changes journey_in attribute to true' do
         card.top_up(described_class::MAX_LIMIT)
-        expect{ card.touch_in(station) }.to change{ card.in_journey }.to eq true
+        expect{ card.touch_in(entry_station) }.to change{ card.in_journey? }.to eq true
       end
-      it 'should record touch_in station' do
+      it 'should record entry_station on touch_in' do
         card.top_up(described_class::MAX_LIMIT)
-        card.touch_in(station)
-        expect(card.station).to eq station
+        card.touch_in(entry_station)
+        expect(card.entry_station).to eq entry_station
       end
       context 'balance of card is less than fare' do
         it 'raises error if card balance is below fare' do
-          expect{ card.touch_in(station) }.to raise_error"Sorry mate- you need a top up!"
+          expect{ card.touch_in(entry_station) }.to raise_error"Sorry mate- you need a top up!"
         end
       end
     end
 
     describe '#touch_out' do
-      it 'changes in_journey attribute to false' do
+      it 'checks if card.in_journey? returns false upon touch_out' do
         card.top_up(described_class::MAX_LIMIT)
-        card.touch_in(station)
-        expect{ card.touch_out }.to change{ card.in_journey }.to eq false
+        card.touch_in(entry_station)
+        expect{ card.touch_out }.to change{ card.in_journey? }.to eq false
       end
-
       it 'subtracts FARE from balance' do
         expect{ card.touch_out }.to change{ card.balance }.by -described_class::FARE
       end
+      it 'entry_station attribute reverts to nil upon touch_out' do
+        card.top_up(described_class::MAX_LIMIT)
+        card.touch_in(entry_station)
+        expect{ card.touch_out }.to change{ card.entry_station }.to eq nil
+      end
+
     end
 end

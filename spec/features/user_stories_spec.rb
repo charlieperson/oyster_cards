@@ -2,7 +2,7 @@ require 'station.rb'
 
 describe "User Stories" do
   let(:card)    { Oystercard.new }
-  let(:station) { Station.new    }
+  let(:entry_station) { Station.new    }
 
   # In order to use public transport
   # As a customer
@@ -40,21 +40,21 @@ describe "User Stories" do
   # I need to touch in and out.
   it 'allows users to touch in' do
     card.top_up(Oystercard::MAX_LIMIT)
-    card.touch_in(station)
-    expect(card.in_journey).to eq true
+    card.touch_in(entry_station)
+    expect(card.in_journey?).to eq true
   end
 
   it 'allows users to touch out' do
     card.top_up(Oystercard::MAX_LIMIT)
-    card.touch_in(station)
-    expect{ card.touch_out }.to change { card.in_journey }.to eq false
+    card.touch_in(entry_station)
+    expect{ card.touch_out }.to change { card.in_journey? }.to eq false
   end
 
   # In order to pay for my journey
   # As a customer
   # I need to have the minimum amount (£1) for a single journey.
   it 'ensures customers have £1 at touch_in' do
-    expect{ card.touch_in(station) }.to raise_error 'Sorry mate- you need a top up!'
+    expect{ card.touch_in(entry_station) }.to raise_error 'Sorry mate- you need a top up!'
   end
 
   # In order to pay for my journey
@@ -67,9 +67,16 @@ describe "User Stories" do
   # In order to pay for my journey
   # As a customer
   # I need to know where I've travelled from
-  it 'card needs to record touch_in station' do
+  it 'card needs to record entry_station on touch_in' do
     card.top_up(Oystercard::MAX_LIMIT)
-    card.touch_in(station)
-    expect(card.station).to eq station
+    card.touch_in(entry_station)
+    expect(card.entry_station).to eq entry_station
   end
+
+  it 'card needs to reset entry_station to nil on touch out' do
+    card.top_up(Oystercard::MAX_LIMIT)
+    card.touch_in(entry_station)
+    expect{ card.touch_out }.to change{ card.entry_station }.to eq nil
+  end
+
 end
