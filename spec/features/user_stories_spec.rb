@@ -32,4 +32,17 @@ describe "User Stories" do
     expect{ card.deduct(3) }.to change{ card.balance }.by -3
   end
 
+  # In order to get through the barriers.
+  # As a customer
+  # I need to touch in and out.
+  it 'allows users to touch in' do
+    card.touch_in
+    expect(card.in_journey).to eq true
+  end
+
+  it 'allows users to touch out' do
+    card.touch_in
+    expect{ card.touch_out }.to change { card.in_journey }.to eq false
+  end
+
 end
