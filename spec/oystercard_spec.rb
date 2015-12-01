@@ -1,9 +1,8 @@
 require 'oystercard'
 
 describe Oystercard do
-  subject(:card)      { described_class.new    }
-  let(:entry_station) { double(:entry_station) }
-  let(:exit_station)  { double(:exit_station)  }
+  subject(:card) { described_class.new }
+  let(:station)  { double(:station)    }
 
   fare      = -described_class::FARE
   max_limit = described_class::MAX_LIMIT
@@ -13,7 +12,7 @@ describe Oystercard do
       expect(card.balance).to eq 0
     end
     it 'raises error if card balance is below fare' do
-      expect{ card.touch_in(entry_station) }.to raise_error"Sorry mate- you need a top up!"
+      expect{ card.touch_in(station) }.to raise_error"Sorry mate- you need a top up!"
     end
   end
 
@@ -34,32 +33,32 @@ describe Oystercard do
 
     describe '#touch_out' do
       it 'checks if card.in_journey? returns false upon touch_out' do
-        card.touch_in(entry_station)
-        expect{ card.touch_out(exit_station) }.to change{ card.in_journey? }.to eq false
+        card.touch_in(station)
+        expect{ card.touch_out(station) }.to change{ card.in_journey? }.to eq false
       end
       it 'subtracts FARE from balance' do
-        expect{ card.touch_out(exit_station) }.to change{ card.balance }.by fare
+        expect{ card.touch_out(station) }.to change{ card.balance }.by fare
       end
       it 'current_trip resets upon touch_out' do
-        card.touch_in(entry_station)
-        expect{ card.touch_out(exit_station) }.to change{ card.current_trip }.to eq []
+        card.touch_in(station)
+        expect{ card.touch_out(station) }.to change{ card.current_trip }.to eq []
       end
     end
 
     describe '#touch_in' do
       it 'changes journey_in attribute to true' do
-        expect{ card.touch_in(entry_station) }.to change{ card.in_journey? }.to eq true
+        expect{ card.touch_in(station) }.to change{ card.in_journey? }.to eq true
       end
-      it 'should record entry_station on touch_in' do
-        card.touch_in(entry_station)
-        expect(card.current_trip).to eq [entry_station]
+      it 'should record station on touch_in' do
+        card.touch_in(station)
+        expect(card.current_trip).to eq [station]
       end
     end
 
     describe '#current_trip' do
       before do
-        card.touch_in(entry_station)
-        card.touch_out(exit_station)
+        card.touch_in(station)
+        card.touch_out(station)
       end
       it 'current_trip is cleared upon touch_out' do
         expect(card.current_trip).to eq []
