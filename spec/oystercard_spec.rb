@@ -3,7 +3,6 @@ require 'oystercard'
 describe Oystercard do
   subject(:card) { described_class.new }
 
-
   describe '#balance' do
     it 'has a balance of 0' do
       expect(card.balance).to eq 0
@@ -54,6 +53,4 @@ describe Oystercard do
         expect{ card.touch_out }.to change{ card.balance }.by -described_class::FARE
       end
     end
-
-
 end
