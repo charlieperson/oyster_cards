@@ -2,7 +2,7 @@ class Oystercard
   MAX_LIMIT = 90
   FARE = 1
 
-  attr_reader :balance, :in_journey
+  attr_reader :balance, :in_journey, :station
 
   def initialize
     @balance = 0
@@ -18,8 +18,9 @@ class Oystercard
     @balance -= fare
   end
 
-  def touch_in
+  def touch_in(station)
     raise "Sorry mate- you need a top up!" if out_of_cash?
+    @station = station
     @in_journey = true
   end
 
