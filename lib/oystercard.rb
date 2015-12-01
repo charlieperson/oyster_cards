@@ -1,5 +1,6 @@
 class Oystercard
   MAX_LIMIT = 90
+  FARE = 1
 
   attr_reader :balance, :in_journey
 
@@ -18,10 +19,19 @@ class Oystercard
   end
 
   def touch_in
+    raise "Sorry mate- you need a top up!" if out_of_cash?
     @in_journey = true
   end
 
   def touch_out
+    @balance -= FARE
     @in_journey = false
   end
+
+  private
+
+  def out_of_cash?
+    FARE > @balance
+  end
+
 end

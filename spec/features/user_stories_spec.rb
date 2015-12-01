@@ -36,13 +36,28 @@ describe "User Stories" do
   # As a customer
   # I need to touch in and out.
   it 'allows users to touch in' do
+    card.top_up(90)
     card.touch_in
     expect(card.in_journey).to eq true
   end
 
   it 'allows users to touch out' do
+    card.top_up(90)
     card.touch_in
     expect{ card.touch_out }.to change { card.in_journey }.to eq false
   end
 
+  # In order to pay for my journey
+  # As a customer
+  # I need to have the minimum amount (£1) for a single journey.
+  it 'ensures customers have £1 at touch_in' do
+    expect{ card.touch_in }.to raise_error 'Sorry mate- you need a top up!'
+  end
+
+  # In order to pay for my journey
+  # As a customer
+  # When my journey is complete, I need the correct amount deducted from my card
+  it 'charges customers appropriate fare when they touch out' do
+    expect{ card.touch_out }.to change{ card.balance }.by -Oystercard::FARE
+  end
 end
