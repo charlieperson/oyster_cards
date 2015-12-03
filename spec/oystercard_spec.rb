@@ -6,7 +6,6 @@ describe Oystercard do
 
   fare         = -described_class::FARE
   max_limit    = described_class::MAX_LIMIT
-  penalty_fine = described_class::PENALTY_FINE
 
   describe '#balance' do
     it 'has a balance of 0' do
@@ -33,9 +32,9 @@ describe Oystercard do
     end
 
     describe '#touch_out' do
-      it 'checks if card.in_journey? returns false upon touch_out' do
+      it 'checks if card.journey.in_journey? returns false upon touch_out' do
         card.touch_in(station)
-        expect{ card.touch_out(station) }.to change{ card.in_journey? }.to eq false
+        expect{ card.touch_out(station) }.to change{ card.journey.in_journey? }.to eq false
       end
       it 'subtracts FARE from balance' do
         card.touch_in(station)
@@ -43,17 +42,17 @@ describe Oystercard do
       end
       it 'current_journey resets upon touch_out' do
         card.touch_in(station)
-        expect{ card.touch_out(station) }.to change{ card.journey_log.current_journey }.to eq([])
+        expect{ card.touch_out(station) }.to change{ card.journey.current_journey }.to eq([])
       end
     end
 
     describe '#touch_in' do
       it 'changes journey_in attribute to true' do
-        expect{ card.touch_in(station) }.to change{ card.in_journey? }.to eq true
+        expect{ card.touch_in(station) }.to change{ card.journey.in_journey? }.to eq true
       end
       it 'should record station on touch_in' do
         card.touch_in(station)
-        expect(card.journey_log.current_journey).to eq [station]
+        expect(card.journey.current_journey).to eq [station]
       end
     end
 
@@ -63,21 +62,10 @@ describe Oystercard do
         card.touch_out(station)
       end
       it 'current_trip is cleared upon touch_out' do
-        expect(card.journey_log.current_journey).to eq []
+        expect(card.journey.current_journey).to eq []
       end
       it 'logs current_trip after touch_in and touch_out' do
-        expect(card.journey_log.log.length).to eq 1
-      end
-
-      describe '#enter' do
-        it 'card.enter equals two upon two consecutive touch_ins' do
-          card.touch_in(station)
-          expect{ card.touch_in(station) }.to change{ card.balance }.by -penalty_fine
-        end
-
-        it 'charges customer if they touch out without touching in' do
-          expect{ card.touch_out(station) }.to change{ card.balance }.by -penalty_fine + fare
-        end
+        expect(card.journey.log.length).to eq 1
       end
     end
 

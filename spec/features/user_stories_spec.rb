@@ -1,6 +1,6 @@
 require 'station.rb'
 require 'oystercard'
-require 'journey_log'
+require 'journey'
 
 describe "User Stories" do
   let(:card)    { Oystercard.new }
@@ -9,7 +9,7 @@ describe "User Stories" do
 
   fare         = -Oystercard::FARE
   max_limit    = Oystercard::MAX_LIMIT
-  penalty_fine = Oystercard::PENALTY_FINE
+  penalty_fine = Journey::PENALTY_FINE
   # penalty_fine = -Oystercard::FINE
 
 
@@ -58,12 +58,12 @@ describe "User Stories" do
     # I need to touch in and out.
     it 'allows users to touch in' do
       card.touch_in(station)
-      expect(card.in_journey?).to eq true
+      expect(card.journey.in_journey?).to eq true
     end
 
     it 'allows users to touch out' do
       card.touch_in(station)
-      expect{ card.touch_out(station) }.to change { card.in_journey? }.to eq false
+      expect{ card.touch_out(station) }.to change { card.journey.in_journey? }.to eq false
     end
     # In order to pay for my journey
     # As a customer
@@ -77,12 +77,12 @@ describe "User Stories" do
     # I need to know where I've travelled from
     it 'card needs to log entry station to current_journey upon touch_in' do
       card.touch_in(station)
-      expect(card.journey_log.current_journey).to eq [station]
+      expect(card.journey.current_journey).to eq [station]
     end
 
     it 'card needs to reset current_trip on touch_out' do
       card.touch_in(station)
-      expect{ card.touch_out(station) }.to change{ card.in_journey? }.to eq false
+      expect{ card.touch_out(station) }.to change{ card.journey.in_journey? }.to eq false
     end
 
     # In order to know where I have been
@@ -91,7 +91,7 @@ describe "User Stories" do
     it 'card stores current trip' do
       card.touch_in(station)
       card.touch_out(station)
-      expect(card.journey_log.log[card.journey_log.log.length]).to eq [station, station]
+      expect(card.journey.log[card.journey.log.length]).to eq [station, station]
     end
 
     # In order to be charged correctly
@@ -108,7 +108,7 @@ describe "User Stories" do
 
     it 'instantiates new journey upon touch_in' do
       card.touch_in(station)
-      expect(card.journey_log.current_journey).to eq [station]
+      expect(card.journey.current_journey).to eq [station]
     end
   end
 
