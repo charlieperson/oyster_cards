@@ -1,13 +1,15 @@
+require_relative 'journey_log'
+
 class Oystercard
   MAX_LIMIT = 90
   FARE = 1
+  PENALTY_FINE = 20
 
-  attr_reader :balance, :current_trip, :trips
+  attr_reader :balance, :journey_log
 
   def initialize
     @balance = 0
-    @current_trip = []
-    @trips = {}
+    @journey_log = Journey_log.new
   end
 
   def top_up(amount)
@@ -17,28 +19,39 @@ class Oystercard
 
   def touch_in(entry_station)
     raise "Sorry mate- you need a top up!" if out_of_cash?
-    current_trip << entry_station
+    @journey_log.current_journey << entry_station
+    penalize_on_touch_in?
   end
 
   def touch_out(exit_station)
-    current_trip << exit_station
+    penalize_on_touch_out?
+    @journey_log.current_journey << exit_station
     save_trip
     reset_trip
     charge_card
   end
 
   def in_journey?
-    !current_trip.empty?
+    !@journey_log.current_journey.empty?
   end
 
+
   private
+
+  def penalize_on_touch_out?
+    @balance -= PENALTY_FINE if @journey_log.current_journey.empty?
+  end
+
+  def penalize_on_touch_in?
+    @balance -= PENALTY_FINE if @journey_log.current_journey.length > 0
+  end
 
   def charge_card
     @balance -= FARE
   end
 
   def reset_trip
-    @current_trip = []
+    @journey_log.current_journey = []
   end
 
   def maxed_out(amount)
@@ -46,7 +59,7 @@ class Oystercard
   end
 
   def save_trip
-    @trips[@trips.length + 1] = @current_trip
+    @journey_log.log[@journey_log.log.length + 1] = @journey_log.current_journey
   end
 
   def out_of_cash?

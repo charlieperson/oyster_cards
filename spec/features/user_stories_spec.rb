@@ -1,12 +1,15 @@
 require 'station.rb'
 require 'oystercard'
+require 'journey_log'
 
 describe "User Stories" do
   let(:card)    { Oystercard.new }
   let(:station) { Station.new('Wapping', 2)    }
+  let(:new_journey) { Journey.new(station) }
 
   fare         = -Oystercard::FARE
   max_limit    = Oystercard::MAX_LIMIT
+  penalty_fine = Oystercard::PENALTY_FINE
   # penalty_fine = -Oystercard::FINE
 
 
@@ -46,6 +49,7 @@ describe "User Stories" do
     # As a customer
     # I need my fare deducted from my card
     it 'fare is deducted from card balance' do
+      card.touch_in(station)
       expect{ card.touch_out(station) }.to change{ card.balance }.by fare
     end
 
@@ -65,14 +69,15 @@ describe "User Stories" do
     # As a customer
     # When my journey is complete, I need the correct amount deducted from my card
     it 'charges customers appropriate fare when they touch out' do
+      card.touch_in(station)
       expect{ card.touch_out(station) }.to change{ card.balance }.by fare
     end
     # In order to pay for my journey
     # As a customer
     # I need to know where I've travelled from
-    it 'card needs to log entry station to current_trip upon touch_in' do
+    it 'card needs to log entry station to current_journey upon touch_in' do
       card.touch_in(station)
-      expect(card.current_trip).to eq [station]
+      expect(card.journey_log.current_journey).to eq [station]
     end
 
     it 'card needs to reset current_trip on touch_out' do
@@ -86,7 +91,24 @@ describe "User Stories" do
     it 'card stores current trip' do
       card.touch_in(station)
       card.touch_out(station)
-      expect(card.trips[card.trips.length]).to eq [station, station]
+      expect(card.journey_log.log[card.journey_log.log.length]).to eq [station, station]
+    end
+
+    # In order to be charged correctly
+    # As a customer
+    # I need a penalty charge deducted if I fail to touch in or out
+    it 'charges customer if they touch in a second time without touching out' do
+      card.touch_in(station)
+      expect{ card.touch_in(station) }.to change{ card.balance }.by -penalty_fine
+    end
+
+    it 'charges customer if they touch out without touching in' do
+      expect{ card.touch_out(station) }.to change{ card.balance }.by -penalty_fine + fare
+    end
+
+    it 'instantiates new journey upon touch_in' do
+      card.touch_in(station)
+      expect(card.journey_log.current_journey).to eq [station]
     end
   end
 
@@ -99,12 +121,4 @@ describe "User Stories" do
   it 'expects station to have a zone' do
     expect(station.zone).to eq 2
   end
-
-  # # In order to be charged correctly
-  # # As a customer
-  # # I need a penalty charge deducted if I fail to touch in or out
-  # it 'card deducts penalty charge if user does not touch out' do
-  #   card.touch_in(station)
-  #   expect{ card.touch_in(station) }.to change{ card.balance }.by penalty_fine
-  # end
 end

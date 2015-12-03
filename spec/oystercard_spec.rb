@@ -4,8 +4,9 @@ describe Oystercard do
   subject(:card) { described_class.new }
   let(:station)  { double(:station)    }
 
-  fare      = -described_class::FARE
-  max_limit = described_class::MAX_LIMIT
+  fare         = -described_class::FARE
+  max_limit    = described_class::MAX_LIMIT
+  penalty_fine = described_class::PENALTY_FINE
 
   describe '#balance' do
     it 'has a balance of 0' do
@@ -37,11 +38,12 @@ describe Oystercard do
         expect{ card.touch_out(station) }.to change{ card.in_journey? }.to eq false
       end
       it 'subtracts FARE from balance' do
+        card.touch_in(station)
         expect{ card.touch_out(station) }.to change{ card.balance }.by fare
       end
-      it 'current_trip resets upon touch_out' do
+      it 'current_journey resets upon touch_out' do
         card.touch_in(station)
-        expect{ card.touch_out(station) }.to change{ card.current_trip }.to eq []
+        expect{ card.touch_out(station) }.to change{ card.journey_log.current_journey }.to eq([])
       end
     end
 
@@ -51,7 +53,7 @@ describe Oystercard do
       end
       it 'should record station on touch_in' do
         card.touch_in(station)
-        expect(card.current_trip).to eq [station]
+        expect(card.journey_log.current_journey).to eq [station]
       end
     end
 
@@ -61,10 +63,21 @@ describe Oystercard do
         card.touch_out(station)
       end
       it 'current_trip is cleared upon touch_out' do
-        expect(card.current_trip).to eq []
+        expect(card.journey_log.current_journey).to eq []
       end
       it 'logs current_trip after touch_in and touch_out' do
-        expect(card.trips.length).to eq 1
+        expect(card.journey_log.log.length).to eq 1
+      end
+
+      describe '#enter' do
+        it 'card.enter equals two upon two consecutive touch_ins' do
+          card.touch_in(station)
+          expect{ card.touch_in(station) }.to change{ card.balance }.by -penalty_fine
+        end
+
+        it 'charges customer if they touch out without touching in' do
+          expect{ card.touch_out(station) }.to change{ card.balance }.by -penalty_fine + fare
+        end
       end
     end
 
