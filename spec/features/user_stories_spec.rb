@@ -27,7 +27,7 @@ describe "User Stories" do
     expect{ card.touch_in(station) }.to raise_error 'Sorry mate- you need a top up!'
   end
 
-  describe 'initialize with balance of max_limit' do
+  describe 'initialize oystercard with balance of max_limit' do
     before do
       card.top_up(max_limit)
     end
